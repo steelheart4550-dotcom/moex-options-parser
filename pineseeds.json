@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "symbols": [
+    {
+      "symbol": "MAX_OI_AFLT",
+      "file": "data.txt",
+      "currency": "RUB",
+      "description": "Максимальный ОИ опционов Аэрофлота"
+    }
+  ]
+}
