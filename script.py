@@ -1,10 +1,9 @@
 import requests
-import os
 
 TICKER = "AFLT"
 URL = f"https://moex.com{TICKER}"
 
-def get_max_oi_strike():
+def get_absolute_max_oi():
     try:
         response = requests.get(URL, timeout=15)
         data = response.json()
@@ -26,14 +25,29 @@ def get_max_oi_strike():
                 
         return float(target_strike), int(max_oi)
     except Exception as e:
-        print(f"Ошибка получения данных: {e}")
+        print(f"Ошибка: {e}")
         return None
 
 if __name__ == "__main__":
-    result = get_max_oi_strike()
+    result = get_absolute_max_oi()
     if result:
         strike, oi = result
-        # Записываем значение в простом формате, понятном для TradingView
-        with open("data.txt", "w") as f:
-            f.write(f"{strike}")
-        print(f"Обновлено: Страйк {strike} (ОИ: {oi})")
+        
+        # Генерируем готовый код индикатора, который всегда содержит актуальный страйк
+        pine_code = f"""//@version=5
+indicator("Макс ОИ МосБиржа (Авто)", overlay=true)
+// Автоматически обновлено скриптом. Макс ОИ: {oi}
+strikeLevel = {strike}
+var line oiLine = na
+if barstate.islast
+    line.delete(oiLine)
+    oiLine := line.new(x1=bar_index - 100, y1=strikeLevel, x2=bar_index, y2=strikeLevel, extend=extend.right, color=color.red, width=3)
+    var label oiLabel = na
+    label.delete(oiLabel)
+    oiLabel := label.new(x=bar_index, y=strikeLevel, text="Макс ОИ: {oi} (Страйк " + str.tostring(strikeLevel) + ")", color=color.red, textcolor=color.white, style=label.style_label_left)
+"""
+        # Сохраняем как готовый индикатор
+        with open("indicator.txt", "w", encoding="utf-8") as f:
+            f.write(pine_code)
+            
+        print(f"Индикатор успешно сгенерирован: Страйк {strike}, ОИ {oi}")
