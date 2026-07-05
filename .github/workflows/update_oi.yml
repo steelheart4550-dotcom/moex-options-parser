@@ -1,0 +1,33 @@
+name: Update MOEX Options Data
+
+on:
+  schedule:
+    # Запуск каждый час с 7 до 20 UTC в будние дни (Пн-Пт)
+    - cron: '0 7-20 * * 1-5'
+  workflow_dispatch: # Позволяет запускать скрипт вручную кнопкой на GitHub
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Проверка репозитория
+      uses: actions/checkout@v4
+
+    - name: Настройка Python
+      uses: actions/setup-python@v5
+      with:
+        python-python: '3.10'
+
+    - name: Установка библиотек
+      run: pip install requests
+
+    - name: Выполнение скрипта
+      run: python script.py
+
+    - name: Фиксация изменений (Commit)
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@://github.com'
+        git add data.txt
+        git diff-index --quiet HEAD || git commit -m "Авто-обновление ОИ MOEX"
+        git push
